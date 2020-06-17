@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Globalization;
 namespace Task20181213_P1
 {
     class Program
@@ -14,7 +15,16 @@ namespace Task20181213_P1
                 decimal amount = PromptForAmount("Currency amount: ");
                 try
                 {
-                    decimal exchangeRate = Fixer.GetLatestExchangeRate(sourceCurrency, targetCurrency);
+                    decimal exchangeRate;
+                    Console.WriteLine();
+                    if (QuestionPrompt("Would you like to check for a particular date? "))
+                    {
+                        exchangeRate = Fixer.GetExchangeRate(sourceCurrency, targetCurrency, PromptForDate("Date: "));
+                    }
+                    else
+                    {
+                        exchangeRate = Fixer.GetExchangeRate(sourceCurrency, targetCurrency);
+                    }
                     Console.WriteLine("\n" + amount + " " + sourceCurrency + " = " + (amount * exchangeRate) + " " + targetCurrency);
                     retry = false;
                 }
@@ -68,6 +78,21 @@ namespace Task20181213_P1
                     return amount;
                 }
                 Console.WriteLine("Please enter a valid amount.\n");
+            }
+        }
+        private static DateTime PromptForDate(string message)
+        {
+            while (true)
+            {
+                string dateString = Prompt(message).Trim();
+                try
+                {
+                    return DateTime.ParseExact(dateString, "d/M/yyyy", CultureInfo.InvariantCulture);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Please enter a valid date.\n");
+                }
             }
         }
         private static bool QuestionPrompt(string message)
