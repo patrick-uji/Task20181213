@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Net;
 using Newtonsoft.Json.Linq;
-namespace Task20181213_P1
+using System.Collections.Generic;
+namespace Task20181213.Common
 {
     public static class Fixer
     {
@@ -20,12 +21,41 @@ namespace Task20181213_P1
         }
         private static decimal QueryExchangeRate(string baseURL, string sourceCurrency, string targetCurrency)
         {
+            string url = baseURL + "&base=" + sourceCurrency + "&symbols=" + targetCurrency;
+            JObject exchangeRates = QueryExchangeRates(url);
+            return exchangeRates.Value<decimal>(targetCurrency);
+        }
+        public static IEnumerable<FixerExchangeRate> GetAllExchangeRates()
+        {
+            List<string> currencyCodes = new List<string>();
+            foreach (var currExchangeRate in GetAllExchangeRates("EUR"))
+            {
+                yield return currExchangeRate;
+                currencyCodes.Add(currExchangeRate.TargetCurrency);
+            }
+            foreach (var currCurrencyCode in currencyCodes)
+            {
+                foreach (var currExchangeRate in GetAllExchangeRates(currCurrencyCode))
+                {
+                    yield return currExchangeRate;
+                }
+            }
+        }
+        public static IEnumerable<FixerExchangeRate> GetAllExchangeRates(string sourceCurrency)
+        {
+            JObject exchangeRates = QueryExchangeRates(LATEST_URL + "&base=" + sourceCurrency);
+            foreach (var currExchangeRate in exchangeRates.Properties())
+            {
+                yield return new FixerExchangeRate(sourceCurrency, currExchangeRate.Name, (decimal)currExchangeRate.Value);
+            }
+        }
+        private static JObject QueryExchangeRates(string url)
+        {
             using (WebClient webClient = new WebClient())
             {
-                string url = baseURL + "&base=" + sourceCurrency + "&symbols=" + targetCurrency;
                 JObject jsonResponse = JObject.Parse(webClient.DownloadString(url));
                 ErrorCodeCheck(jsonResponse);
-                return jsonResponse.Value<JObject>("rates").Value<decimal>(targetCurrency);
+                return jsonResponse.Value<JObject>("rates");
             }
         }
         private static void ErrorCodeCheck(JObject jsonResponse)

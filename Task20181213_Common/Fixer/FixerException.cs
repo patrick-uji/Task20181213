@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Task20181213_P1
+namespace Task20181213.Common
 {
     public class FixerException : Exception
     {

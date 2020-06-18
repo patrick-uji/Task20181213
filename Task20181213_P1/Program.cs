@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Net;
 using System.Globalization;
-namespace Task20181213_P1
+using Task20181213.Common;
+namespace Task20181213.P1
 {
     class Program
     {
