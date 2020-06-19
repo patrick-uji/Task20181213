@@ -1,21 +1,23 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-
 import { AppComponent } from './app.component';
-import { NavMenuComponent } from './nav-menu/nav-menu.component';
-import { HomeComponent } from './home/home.component';
-import { CounterComponent } from './counter/counter.component';
-import { FetchDataComponent } from './fetch-data/fetch-data.component';
-
+import { HttpClientModule } from '@angular/common/http';
+import { BrowserModule } from '@angular/platform-browser';
+import { HomeComponent } from './components/home/home.component';
+import { CurrenciesService } from './services/currencies.service';
+import { ToastComponent } from './components/toast/toast.component';
+import { ExchangeRateService } from './services/exchangerate.service';
+import { NavMenuComponent } from './components/nav-menu/nav-menu.component';
+import { ExchangerComponent } from './components/exchanger/exchanger.component';
+import { FetchDataComponent } from './components/fetch-data/fetch-data.component';
 @NgModule({
   declarations: [
     AppComponent,
-    NavMenuComponent,
     HomeComponent,
-    CounterComponent,
+    ToastComponent,
+    NavMenuComponent,
+    ExchangerComponent,
     FetchDataComponent
   ],
   imports: [
@@ -24,11 +26,14 @@ import { FetchDataComponent } from './fetch-data/fetch-data.component';
     FormsModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: 'counter', component: CounterComponent },
+      { path: 'exchanger', component: ExchangerComponent },
       { path: 'fetch-data', component: FetchDataComponent },
     ])
   ],
-  providers: [],
+  providers: [
+    ExchangeRateService,
+    CurrenciesService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
