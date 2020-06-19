@@ -63,12 +63,12 @@ namespace Task20181213.Common
             if (!jsonResponse.Value<bool>("success"))
             {
                 JObject errorNode = jsonResponse.Value<JObject>("error");
-                int errorCode = errorNode.Value<int>("code");
+                FixerErrorCode errorCode = (FixerErrorCode)errorNode.Value<int>("code");
                 switch (errorCode)
                 {
-                    case 101: throw new FixerException("API key not supplied. (Check Fixer.cs)", errorCode);
-                    case 105: throw new FixerException("API key has restricted access.", errorCode);
-                    case 202: throw new FixerException("Invalid currency code supplied.", errorCode);
+                    case FixerErrorCode.NoAPIKey: throw new FixerException("API key not supplied. (Check Fixer.cs)", errorCode);
+                    case FixerErrorCode.InvalidCurrency: throw new FixerException("Invalid currency code supplied.", errorCode);
+                    case FixerErrorCode.RestrictedAPIKey: throw new FixerException("API key has restricted access.", errorCode);
                     default: throw new FixerException("Unknown Fixer.io error code (" + errorCode + "): " + errorNode.Value<string>("info"), errorCode);
                 }
             }

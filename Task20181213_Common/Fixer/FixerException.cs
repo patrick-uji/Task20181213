@@ -3,8 +3,8 @@ namespace Task20181213.Common
 {
     public class FixerException : Exception
     {
-        public int ErrorCode { get; private set; }
-        public FixerException(string message, int errorCode) : base(message)
+        public FixerErrorCode ErrorCode { get; private set; }
+        internal FixerException(string message, FixerErrorCode errorCode) : base(message)
         {
             this.ErrorCode = errorCode;
         }
