@@ -26,8 +26,8 @@ namespace Task20181213.Common.DB
         {
             if (!currenciesCache.TryGetValue(code, out Currency currency))
             {
-                currency = this.Currencies.Local //Reminder: By using ".Local", we can query objects that have not been saved to the database yet!
-                               .Where(currency => currency.Code == code).FirstOrDefault();
+                currency = FindCurrencyIn(this.Currencies, code) ??
+                           FindCurrencyIn(this.Currencies.Local, code); //Reminder: By using ".Local", we can query objects that have not been saved to the database yet!
                 if (currency == null)
                 {
                     currency = new Currency();
@@ -37,6 +37,10 @@ namespace Task20181213.Common.DB
                 currenciesCache.Add(code, currency);
             }
             return currency;
+        }
+        private Currency FindCurrencyIn(IEnumerable<Currency> currencies, string code)
+        {
+            return currencies.Where(currency => currency.Code == code).FirstOrDefault();
         }
     }
 }

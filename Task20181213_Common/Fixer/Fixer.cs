@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Diagnostics;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 namespace Task20181213.Common
@@ -33,13 +34,15 @@ namespace Task20181213.Common
                 yield return currExchangeRate;
                 currencyCodes.Add(currExchangeRate.TargetCurrency);
             }
-            foreach (var currCurrencyCode in currencyCodes)
+            for (int currCurrencyIndex = 0; currCurrencyIndex < currencyCodes.Count; currCurrencyIndex++)
             {
-                foreach (var currExchangeRate in GetAllExchangeRates(currCurrencyCode))
+                Debug.Print("GetAllExchangeRates() [" + currCurrencyIndex + "/" + currencyCodes.Count + "]");
+                foreach (var currExchangeRate in GetAllExchangeRates(currencyCodes[currCurrencyIndex]))
                 {
                     yield return currExchangeRate;
                 }
             }
+            Debug.Print("GetAllExchangeRates() DONE!");
         }
         public static IEnumerable<FixerExchangeRate> GetAllExchangeRates(string sourceCurrency)
         {
