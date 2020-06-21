@@ -1,6 +1,6 @@
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Currency } from '../model/currency.model';
-import { Injectable } from '@angular/core';
 const BASE_URL = "./api/Currencies";
 @Injectable()
 export class CurrenciesService {

@@ -1,0 +1,41 @@
+<h1>Market History</h1>
+
+<div *ngIf="currencies">
+  <div>
+    <label for="sourceCurrencyBox">
+      For:
+      <select id="sourceCurrencyBox" [(ngModel)]="sourceCurrency" (ngModelChange)="requestExchangeRates()">
+        <option *ngFor="let currCurrency of currencies" [selected]="currCurrency.code == sourceCurrency">{{currCurrency.code}}</option>
+      </select>
+    </label>
+    <label for="targetCurrencyBox">
+      To:
+      <select id="targetCurrencyBox" [(ngModel)]="targetCurrency" (ngModelChange)="updateChart()">
+        <option *ngFor="let currCurrency of currencies" [selected]="currCurrency.code == targetCurrency">{{currCurrency.code}}</option>
+      </select>
+    </label>
+  </div>
+
+  <div>
+    <label for="fromDatePicker">
+      From:
+      <input id="fromDatePicker" type="date" [ngModel]="fromDate | date:'yyyy-MM-dd'" (ngModelChange)="fromDateChanged($event)">
+    </label>
+    <label for="untilDatePicker">
+      Until:
+      <input id="untilDatePicker" type="date" [ngModel]="toDate | date:'yyyy-MM-dd'" (ngModelChange)="toDateChanged($event)">
+    </label>
+  </div>
+
+  <canvas mdbChart
+          chartType="line"
+          [labels]="chartLabels"
+          [datasets]="chartDatasets"
+          [colors]="chartColors"
+          legend="true">
+  </canvas>
+</div>
+
+<p *ngIf="!currencies">Loading...</p>
+
+<toast-component></toast-component>

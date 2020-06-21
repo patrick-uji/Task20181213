@@ -22,7 +22,7 @@ export class ExchangerComponent {
   private toast: ToastComponent;
 
   constructor(private exchangeRateService: ExchangeRateService,
-              private currenciesService: CurrenciesService) {
+              currenciesService: CurrenciesService) {
     currenciesService.getAll().then(response => this.currencies = response);
   }
 

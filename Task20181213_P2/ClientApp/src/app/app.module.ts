@@ -4,13 +4,14 @@ import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
+import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { HomeComponent } from './components/home/home.component';
 import { CurrenciesService } from './services/currencies.service';
 import { ToastComponent } from './components/toast/toast.component';
 import { ExchangeRateService } from './services/exchangerate.service';
 import { NavMenuComponent } from './components/nav-menu/nav-menu.component';
 import { ExchangerComponent } from './components/exchanger/exchanger.component';
-import { FetchDataComponent } from './components/fetch-data/fetch-data.component';
+import { MarketHistoryComponent } from './components/market-history/market-history.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -18,7 +19,7 @@ import { FetchDataComponent } from './components/fetch-data/fetch-data.component
     ToastComponent,
     NavMenuComponent,
     ExchangerComponent,
-    FetchDataComponent
+    MarketHistoryComponent
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
@@ -27,8 +28,9 @@ import { FetchDataComponent } from './components/fetch-data/fetch-data.component
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'exchanger', component: ExchangerComponent },
-      { path: 'fetch-data', component: FetchDataComponent },
-    ])
+      { path: 'market-history', component: MarketHistoryComponent },
+    ]),
+    MDBBootstrapModule.forRoot()
   ],
   providers: [
     ExchangeRateService,
