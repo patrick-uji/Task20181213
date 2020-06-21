@@ -17,8 +17,7 @@ namespace Task20181213.Common
         }
         public static decimal GetExchangeRate(string sourceCurrency, string targetCurrency, DateTime date)
         {
-            string baseURL = API_URL + date.ToString("yyyy-MM-dd") + ACCESS_KEY_SUFFIX;
-            return QueryExchangeRate(baseURL, sourceCurrency, targetCurrency);
+            return QueryExchangeRate(BuildDateQueryURL(date), sourceCurrency, targetCurrency);
         }
         private static decimal QueryExchangeRate(string baseURL, string sourceCurrency, string targetCurrency)
         {
@@ -28,25 +27,41 @@ namespace Task20181213.Common
         }
         public static IEnumerable<FixerExchangeRate> GetAllExchangeRates()
         {
+            return QueryAllExchangeRates(GetAllExchangeRates);
+        }
+        public static IEnumerable<FixerExchangeRate> GetAllExchangeRates(DateTime date)
+        {
+            return QueryAllExchangeRates(currencyCode => GetAllExchangeRates(currencyCode, date));
+        }
+        private static IEnumerable<FixerExchangeRate> QueryAllExchangeRates(Func<string, IEnumerable<FixerExchangeRate>> getExchangeRatesFunc)
+        {
             List<string> currencyCodes = new List<string>();
-            foreach (var currExchangeRate in GetAllExchangeRates("EUR"))
+            foreach (var currExchangeRate in getExchangeRatesFunc("EUR"))
             {
                 yield return currExchangeRate;
                 currencyCodes.Add(currExchangeRate.TargetCurrency);
             }
             for (int currCurrencyIndex = 0; currCurrencyIndex < currencyCodes.Count; currCurrencyIndex++)
             {
-                Debug.Print("GetAllExchangeRates() [" + currCurrencyIndex + "/" + currencyCodes.Count + "]");
-                foreach (var currExchangeRate in GetAllExchangeRates(currencyCodes[currCurrencyIndex]))
+                Debug.Print("QueryAllExchangeRates() [" + currCurrencyIndex + "/" + currencyCodes.Count + "]");
+                foreach (var currExchangeRate in getExchangeRatesFunc(currencyCodes[currCurrencyIndex]))
                 {
                     yield return currExchangeRate;
                 }
             }
-            Debug.Print("GetAllExchangeRates() DONE!");
+            Debug.Print("QueryAllExchangeRates() DONE!");
         }
         public static IEnumerable<FixerExchangeRate> GetAllExchangeRates(string sourceCurrency)
         {
-            JObject exchangeRates = QueryExchangeRates(LATEST_URL + "&base=" + sourceCurrency);
+            return QueryAllExchangeRates(LATEST_URL, sourceCurrency);
+        }
+        public static IEnumerable<FixerExchangeRate> GetAllExchangeRates(string sourceCurrency, DateTime date)
+        {
+            return QueryAllExchangeRates(BuildDateQueryURL(date), sourceCurrency);
+        }
+        private static IEnumerable<FixerExchangeRate> QueryAllExchangeRates(string baseURL, string sourceCurrency)
+        {
+            JObject exchangeRates = QueryExchangeRates(baseURL + "&base=" + sourceCurrency);
             foreach (var currExchangeRate in exchangeRates.Properties())
             {
                 yield return new FixerExchangeRate(sourceCurrency, currExchangeRate.Name, (decimal)currExchangeRate.Value);
@@ -75,6 +90,10 @@ namespace Task20181213.Common
                     default: throw new FixerException("Unknown Fixer.io error code (" + errorCode + "): " + errorNode.Value<string>("info"), errorCode);
                 }
             }
+        }
+        private static string BuildDateQueryURL(DateTime date)
+        {
+            return API_URL + date.ToString("yyyy-MM-dd") + ACCESS_KEY_SUFFIX;
         }
     }
 }
