@@ -92,7 +92,7 @@ namespace Task20181213.P1
                 }
                 catch (FormatException)
                 {
-                    Console.WriteLine("Please enter a valid date.\n");
+                    Console.WriteLine("Please enter a valid date. (Format: Day/Month/Year)\n");
                 }
             }
         }

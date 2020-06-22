@@ -58,7 +58,7 @@ namespace Task20181213_Snapshotter
                 }
                 catch (FormatException)
                 {
-                    Console.WriteLine("Please enter a valid date.\n");
+                    Console.WriteLine("Please enter a valid date. (Format: Day/Month/Year)\n");
                 }
             }
         }

@@ -10,6 +10,7 @@ import { CurrenciesService } from './services/currencies.service';
 import { ToastComponent } from './components/toast/toast.component';
 import { ExchangeRateService } from './services/exchangerate.service';
 import { NavMenuComponent } from './components/nav-menu/nav-menu.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ExchangerComponent } from './components/exchanger/exchanger.component';
 import { MarketHistoryComponent } from './components/market-history/market-history.component';
 @NgModule({
@@ -23,6 +24,7 @@ import { MarketHistoryComponent } from './components/market-history/market-histo
   ],
   imports: [
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
+    BrowserAnimationsModule,
     HttpClientModule,
     FormsModule,
     RouterModule.forRoot([

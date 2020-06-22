@@ -33,13 +33,25 @@ namespace Task20181213_P2.Controllers
             }
             try
             {
-                decimal exchangeRate = date != null ? Fixer.GetExchangeRate(from, to, ParseISODate(date))
-                                                    : Fixer.GetExchangeRate(from, to);
+                decimal exchangeRate;
+                if (date != null)
+                {
+                    DateTime parsedDate = ParseISODate(date);
+                    if (parsedDate > DateTime.Now)
+                    {
+                        return BadRequest("The 'date' parameter cannot be after today.");
+                    }
+                    exchangeRate = Fixer.GetExchangeRate(from, to, parsedDate);
+                }
+                else
+                {
+                    exchangeRate = Fixer.GetExchangeRate(from, to);
+                }
                 return Ok(amount * exchangeRate);
             }
             catch (FormatException)
             {
-                return BadDateRequest("date");
+                return BadDateFormatRequest("date");
             }
             catch (FixerException ex)
             {
@@ -65,15 +77,15 @@ namespace Task20181213_P2.Controllers
             }
             if (!DefaultOrTryParseDate(from, out fromDate, now))
             {
-                return BadDateRequest("from");
+                return BadDateFormatRequest("from");
             }
             if (!DefaultOrTryParseDate(to, out toDate, now))
             {
-                return BadDateRequest("to");
+                return BadDateFormatRequest("to");
             }
             if (fromDate > toDate)
             {
-                return BadRequest("The 'from' parameter cannot have a later date than the 'to' parameter");
+                return BadRequest("The 'from' parameter cannot have a later date than the 'to' parameter.");
             }
             var result = currencyMarket.ExchangeRates.Where(exchangeRate => exchangeRate.SourceCurrency.Code == code &&
                                                                             exchangeRate.Date >= fromDate && exchangeRate.Date <= toDate)
@@ -112,7 +124,7 @@ namespace Task20181213_P2.Controllers
         {
             return DateTime.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
-        private BadRequestObjectResult BadDateRequest(string dateParamName)
+        private BadRequestObjectResult BadDateFormatRequest(string dateParamName)
         {
             return BadRequest("Invalid date format supplied in '" + dateParamName + "' parameter. Expected format: yyyy-MM-dd");
         }

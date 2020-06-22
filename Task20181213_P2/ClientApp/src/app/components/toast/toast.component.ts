@@ -1,20 +1,37 @@
 import { Component } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 @Component({
   selector: 'toast-component',
   templateUrl: './toast.component.html',
-  styleUrls: ['./toast.component.css']
+  styleUrls: ['./toast.component.css'],
+  animations: [
+    trigger("changeVisibility", [
+      state("void", style({
+        opacity: 0
+      })),
+      state("visible", style({
+        opacity: 1
+      })),
+      state("hidden", style({
+        opacity: 0
+      })),
+      transition("void => visible", animate("350ms")),
+      transition("visible => hidden", animate("600ms 2s")),
+      transition("hidden => visible", animate("350ms"))
+    ])
+  ]
 })
 export class ToastComponent {
 
-  private opacity: number;
-  private message: string;
+  public message: string;
+  private visible: boolean;
 
   constructor() {
   }
 
   public showMessage(message: string) {
     this.message = message;
-    this.opacity = 1;
+    this.visible = true;
   }
 
   public showHttpError(httpResponse: any) {
@@ -23,12 +40,24 @@ export class ToastComponent {
     if (errors) {
       this.message = error.title;
       for (let currError in errors) {
-        this.message += `\n"${currError}": ${errors[currError][0]}`;
+        let errorDescription = errors[currError][0];
+        this.message += `\n"${currError}": ${errorDescription}`;
       }
     } else {
       this.message = error;
     }
-    this.opacity = 1;
+    this.visible = true;
+  }
+
+  public getVisibilityState(): string {
+    return this.visible ? "visible" : "hidden";
+  }
+
+  public visibilityAnimationDone(event: any) {
+    if (event.toState == "visible") {
+      //We've just becomed visible, let's start transitioning to the invisible state
+      this.visible = false;
+    }
   }
 
 }

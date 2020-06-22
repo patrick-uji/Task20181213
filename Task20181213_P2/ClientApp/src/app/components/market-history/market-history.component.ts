@@ -5,6 +5,7 @@ import { ToastComponent } from '../toast/toast.component';
 import { CurrenciesService } from '../../services/currencies.service';
 import { ExchangeRateService } from '../../services/exchangerate.service';
 import { ExchangeRateDateGroupDTO } from '../../dto/exchangerate.dategroup.dto';
+
 interface ChartDataSet {
   data: number[],
   label: string
@@ -45,7 +46,8 @@ export class MarketHistoryComponent {
 
   constructor(private exchangeRatesService: ExchangeRateService,
               currenciesService: CurrenciesService) {
-    currenciesService.getAll().then(response => this.currencies = response);
+    currenciesService.getAll().then(response => this.currencies = response)
+                              .catch(httpResponse => this.toast.showHttpError(httpResponse));
     this.requestExchangeRates();
   }
 
@@ -61,21 +63,20 @@ export class MarketHistoryComponent {
 
   public requestExchangeRates() {
     let promise = this.exchangeRatesService.getAllExchangeRatesFor(this.sourceCurrency, this.fromDate, this.toDate);
-    promise.then(response => this.exchangeRatesReceived(response));
+    promise.then(response => this.exchangeRatesReceived(response))
+           .catch(httpResponse => this.toast.showHttpError(httpResponse));
   }
 
   private exchangeRatesReceived(exchangeRates: ExchangeRateDateGroupDTO[]) {
-    this.chartLabels = [];
     this.exchangeRates = exchangeRates;
-    for (let currDateGroup of exchangeRates) {
-      this.chartLabels.push(currDateGroup.date);
-    }
     this.updateChart();
   }
 
   private updateChart() {
     let data = [];
+    this.chartLabels = []; //The chart only seems to update when the labels change...
     for (let currDateGroup of this.exchangeRates) {
+      this.chartLabels.push(currDateGroup.date);
       data.push(currDateGroup.rates[this.targetCurrency]);
     }
     this.chartDatasets[0].data = data;

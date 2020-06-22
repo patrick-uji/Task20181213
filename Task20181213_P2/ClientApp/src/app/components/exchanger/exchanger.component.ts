@@ -1,3 +1,4 @@
+import { Utils } from '../../utils';
 import { Component, ViewChild } from '@angular/core';
 import { Currency } from '../../model/currency.model';
 import { ToastComponent } from '../toast/toast.component';
@@ -23,7 +24,8 @@ export class ExchangerComponent {
 
   constructor(private exchangeRateService: ExchangeRateService,
               currenciesService: CurrenciesService) {
-    currenciesService.getAll().then(response => this.currencies = response);
+    currenciesService.getAll().then(response => this.currencies = response)
+                              .catch(httpResponse => this.toast.showHttpError(httpResponse));
   }
 
   public calculateExchange() {
@@ -34,6 +36,14 @@ export class ExchangerComponent {
 
   private getSelectedDate(): Date {
     return this.useDate ? this.date : null;
+  }
+
+  public dateChanged(date: string) {
+    this.date = new Date(date);
+  }
+
+  public getToday(): string {
+    return Utils.getISODateOnly(new Date());
   }
 
 }

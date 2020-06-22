@@ -8,20 +8,20 @@
     <select [(ngModel)]="targetCurrency">
       <option *ngFor="let currCurrency of currencies" [selected]="currCurrency.code == targetCurrency">{{currCurrency.code}}</option>
     </select>
-    <input type="number" [(ngModel)]="amount" step="0.01" placeholder="Amount" />
+    <input type="number" [(ngModel)]="amount" min="0" step="0.01" placeholder="Amount" />
   </div>
 
   <div>
     <label for="useDateCheckBox">
-      Check for date?
+      Use specific date?
       <input id="useDateCheckBox" type="checkbox" [(ngModel)]="useDate">
     </label>
     <div *ngIf="useDate">
-      <input type="date" [(ngModel)]="date">
+      <input type="date" [ngModel]="date | date:'yyyy-MM-dd'" [max]="getToday()" (ngModelChange)="dateChanged($event)">
     </div>
   </div>
 
-  <button class="btn btn-primary" (click)="calculateExchange()">Calculate</button>
+  <button class="btn btn-primary" (click)="calculateExchange()" [disabled]="!amount">Calculate</button>
 
   <p>Result: <strong>{{result}}</strong></p>
 </div>

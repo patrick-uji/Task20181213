@@ -41,6 +41,7 @@ namespace Task20181213.Common
                 yield return currExchangeRate;
                 currencyCodes.Add(currExchangeRate.TargetCurrency);
             }
+            currencyCodes.Remove("EUR");
             for (int currCurrencyIndex = 0; currCurrencyIndex < currencyCodes.Count; currCurrencyIndex++)
             {
                 Debug.Print("QueryAllExchangeRates() [" + currCurrencyIndex + "/" + currencyCodes.Count + "]");
