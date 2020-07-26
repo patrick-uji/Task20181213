@@ -1,10 +1,12 @@
+using System;
 using Task20181213.Common.DB;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
 namespace Task20181213_P2
 {
     public class Startup
@@ -15,12 +17,28 @@ namespace Task20181213_P2
         }
 
         public IConfiguration Configuration { get; }
+        private bool InDocker
+        {
+            get
+            {
+                return Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
+            }
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
-            services.AddDbContext<CurrencyMarketContext>();
+            services.AddDbContext<CurrencyMarketContext>(options => {
+                if (this.InDocker)
+                {
+                    string user = Configuration["DBUser"] ?? "SA"; //Probably should default to a different account...
+                    string port = Configuration["DBPort"] ?? "1433";
+                    string server = Configuration["DBServer"] ?? "ms-sql-server";
+                    string password = Configuration["DBPassword"] ?? "ST0RE_ELSEWHERE!";
+                    options.UseSqlServer("Server=" + server + "," + port + ";Initial Catalog=CurrencyMarket;User ID=" + user + ";Password=" + password);
+                }
+            });
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -70,6 +88,12 @@ namespace Task20181213_P2
                     spa.UseAngularCliServer(npmScript: "start");
                 }
             });
+
+            using (var serviceScope = app.ApplicationServices.CreateScope())
+            {
+                CurrencyMarketContext currencyMarket = serviceScope.ServiceProvider.GetService<CurrencyMarketContext>();
+                currencyMarket.Database.Migrate();
+            }
         }
     }
 }

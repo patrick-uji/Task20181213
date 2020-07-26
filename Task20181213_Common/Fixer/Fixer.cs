@@ -23,7 +23,7 @@ namespace Task20181213.Common
         {
             string url = baseURL + "&base=" + sourceCurrency + "&symbols=" + targetCurrency;
             JObject exchangeRates = QueryExchangeRates(url);
-            return exchangeRates.Value<decimal>(targetCurrency);
+            return exchangeRates.Value<decimal>(targetCurrency.ToUpper());
         }
         public static IEnumerable<FixerExchangeRate> GetAllExchangeRates()
         {

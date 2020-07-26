@@ -1,0 +1,21 @@
+version: "3"
+services:
+  task20181213_p2:
+    build:
+      context: "."
+      dockerfile: "Task20181213_P2/Dockerfile"
+    depends_on:
+      - "ms-sql-server"
+    environment:
+      WAIT_HOSTS: "ms-sql-server:1433"
+      WAIT_HOSTS_TIMEOUT: 600
+    ports:
+      - "80:80"
+
+  ms-sql-server:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    environment:
+      ACCEPT_EULA: "y"
+      SA_PASSWORD: "ST0RE_ELSEWHERE!"
+    ports:
+      - "1433:1433"

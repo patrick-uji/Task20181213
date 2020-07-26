@@ -11,11 +11,22 @@ namespace Task20181213.Common.DB
         public DbSet<ExchangeRate> ExchangeRates { get; set; }
         public CurrencyMarketContext()
         {
+            CommonInit();
+        }
+        public CurrencyMarketContext(DbContextOptions<CurrencyMarketContext> options) : base(options)
+        {
+            CommonInit();
+        }
+        private void CommonInit()
+        {
             this.currenciesCache = new Dictionary<string, Currency>();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=CurrencyMarket;Integrated Security=True");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=CurrencyMarket;Integrated Security=True");
+            }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,6 +52,10 @@ namespace Task20181213.Common.DB
         private Currency FindCurrencyIn(IEnumerable<Currency> currencies, string code)
         {
             return currencies.Where(currency => currency.Code == code).FirstOrDefault();
+        }
+        public bool ContainsExchangeRatesIn(DateTime date)
+        {
+            return this.ExchangeRates.Where(exchangeRate => exchangeRate.Date == date).Any();
         }
     }
 }

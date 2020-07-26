@@ -39,7 +39,7 @@ namespace Task20181213_P2.Controllers
                     DateTime parsedDate = ParseISODate(date);
                     if (parsedDate > DateTime.Now)
                     {
-                        return BadRequest("The 'date' parameter cannot be after today.");
+                        return DateAfterTodayError("date");
                     }
                     exchangeRate = Fixer.GetExchangeRate(from, to, parsedDate);
                 }
@@ -51,7 +51,7 @@ namespace Task20181213_P2.Controllers
             }
             catch (FormatException)
             {
-                return BadDateFormatRequest("date");
+                return DateFormatError("date");
             }
             catch (FixerException ex)
             {
@@ -77,15 +77,15 @@ namespace Task20181213_P2.Controllers
             }
             if (!DefaultOrTryParseDate(from, out fromDate, now))
             {
-                return BadDateFormatRequest("from");
+                return DateFormatError("from");
             }
             if (!DefaultOrTryParseDate(to, out toDate, now))
             {
-                return BadDateFormatRequest("to");
+                return DateFormatError("to");
             }
             if (fromDate > toDate)
             {
-                return BadRequest("The 'from' parameter cannot have a later date than the 'to' parameter.");
+                return DateOrderError("from", "to");
             }
             var result = currencyMarket.ExchangeRates.Where(exchangeRate => exchangeRate.SourceCurrency.Code == code &&
                                                                             exchangeRate.Date >= fromDate && exchangeRate.Date <= toDate)
@@ -97,6 +97,73 @@ namespace Task20181213_P2.Controllers
                                                                                                                                exchangeRate => exchangeRate.Rate) )
                                                              );
             return Ok(result);
+        }
+        [HttpGet("snapshot")]
+        public ActionResult<string> Snapshot([FromQuery] string from,
+                                             [FromQuery] string until)
+        {
+            string response;
+            DateTime fromDate;
+            DateTime untilDate;
+            DateTime now = DateTime.Now;
+            ERSnapshotsTracker snapshotsTracker;
+            if (!DefaultOrTryParseDate(from, out fromDate, now))
+            {
+                return DateFormatError("from");
+            }
+            if (!DefaultOrTryParseDate(until, out untilDate, now))
+            {
+                return DateFormatError("until");
+            }
+            if (fromDate > untilDate)
+            {
+                return DateOrderError("from", "until");
+            }
+            if (fromDate > now)
+            {
+                return DateAfterTodayError("from");
+            }
+            if (untilDate > now)
+            {
+                return DateAfterTodayError("until");
+            }
+            snapshotsTracker = SnapshotExchangeRates(fromDate, untilDate);
+            response = "Snapshot " + snapshotsTracker.Dates + " dates (Total exchange rates: " + snapshotsTracker.ExchangeRates + ").";
+            logger.LogInformation(response);
+            return Ok(response);
+        }
+        private ERSnapshotsTracker SnapshotExchangeRates(DateTime fromDate, DateTime untilDate)
+        {
+            ERSnapshotsTracker tracker = new ERSnapshotsTracker();
+            DateTime currDate = fromDate;
+            while (currDate <= untilDate)
+            {
+                if (!currencyMarket.ContainsExchangeRatesIn(currDate))
+                {
+                    logger.LogInformation("Snapshotting exchange rates in: " + currDate.ToString("dd/MM/yyyy"));
+                    foreach (var currExchangeRate in Fixer.GetAllExchangeRates(currDate))
+                    {
+                        Currency sourceCurrency = currencyMarket.FindOrCreateCurrency(currExchangeRate.SourceCurrency);
+                        Currency targetCurrency = currencyMarket.FindOrCreateCurrency(currExchangeRate.TargetCurrency);
+                        currencyMarket.ExchangeRates.Add(new ExchangeRate()
+                        {
+                            SourceCurrency = sourceCurrency,
+                            TargetCurrency = targetCurrency,
+                            Rate = currExchangeRate.Rate,
+                            Date = currDate
+                        });
+                    }
+                    tracker.ExchangeRates += currencyMarket.ExchangeRates.Local.Count;
+                    currencyMarket.SaveChanges();
+                    tracker.Dates++;
+                }
+                else
+                {
+                    logger.LogInformation("Already contained the exchange rates in: " + currDate.ToString("dd/MM/yyyy") + " [Skipping]");
+                }
+                currDate = currDate.AddDays(1);
+            }
+            return tracker;
         }
         private bool DefaultOrTryParseDate(string date, out DateTime result, DateTime defaultValue)
         {
@@ -124,9 +191,17 @@ namespace Task20181213_P2.Controllers
         {
             return DateTime.ParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
-        private BadRequestObjectResult BadDateFormatRequest(string dateParamName)
+        private BadRequestObjectResult DateFormatError(string dateParamName)
         {
             return BadRequest("Invalid date format supplied in '" + dateParamName + "' parameter. Expected format: yyyy-MM-dd");
+        }
+        private BadRequestObjectResult DateOrderError(string fromDateParamName, string toDateParamName)
+        {
+            return BadRequest("The '" + fromDateParamName + "' parameter cannot have a later date than the '" + toDateParamName + "' parameter.");
+        }
+        private BadRequestObjectResult DateAfterTodayError(string dateParamName)
+        {
+            return BadRequest("The '" + dateParamName + "' date cannot be after today.");
         }
     }
 }
